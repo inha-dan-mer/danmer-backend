@@ -10,7 +10,7 @@ class TutorVideoPost(models.Model): # tutor가 올리는 video post. main page�
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 class TuteeVideoPost(models.Model): #tutee가 올리는 video posst
-    tutee_video_url = models.FileField(null = True)
+    tutee_video = models.FileField(null = True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tutor_video = models.ForeignKey("TutorVideoPost", on_delete=models.CASCADE)
 
