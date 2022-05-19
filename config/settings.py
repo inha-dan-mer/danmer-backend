@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@sm&6z#a#vmm%6t**1%jsp4-dh!3_q$9n-^9nvul6&k2zb2zyh'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -137,10 +137,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://localhost:3000',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://127.0.0.1:8000',
+#     'http://localhost:3000',
+#     'https://127.0.0.1:3000',
+#     'https://localhost:8000',
+#     'http://52.79.67.201:8000'
+#     'http://danmer.site'
+    
+# ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -160,3 +167,10 @@ AWS_S3_ACCESS_KEY_ID = os.getenv('ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY =os.getenv('SECRET_ACCESS_KEY')
 
 AWS_STORAGE_BUCKET_NAME = 'danmer-videos'
+
+# DRF
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
