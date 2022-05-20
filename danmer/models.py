@@ -19,5 +19,5 @@ class TuteeVideoPost(models.Model): #tutee가 올리는 video posst
     tutor_video = models.ForeignKey("TutorVideoPost", on_delete=models.CASCADE)
 
 class Feedback(models.Model):
-    result_per_part = models.JSONField(default='{}') # body part별 정확도 모음
+    result_per_part = models.JSONField(default=dict) # body part별 정확도 모음
     post = models.ForeignKey("TuteeVideoPost", on_delete=models.CASCADE)

@@ -8,7 +8,12 @@ class TutorVideoPostSerializer(serializers.ModelSerializer):
         read_only_fields = ['user','created_at']
 
 class TuteeVideoPostSerializer(serializers.ModelSerializer):
+    tutor_video_id = serializers.IntegerField()
+    # tutor_video_id = serializers.SerializerMethodField()
     class Meta:
         model = TuteeVideoPost
-        fields = ['pk','tutee_video','tutor_video']
+        fields = ['pk','tutee_video', 'tutor_video_id', 'tutor_video','user']
+        # read_only_fields = ['tutor_video','user']
+        #fields = ['pk','tutee_video','tutor_video']
+
 
