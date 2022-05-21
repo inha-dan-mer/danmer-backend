@@ -13,7 +13,6 @@ class TuteeVideoPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = TuteeVideoPost
         fields = ['pk','tutee_video', 'tutor_video_id', 'tutor_video','user']
-        # read_only_fields = ['tutor_video','user']
-        #fields = ['pk','tutee_video','tutor_video']
+        read_only_fields = ['tutor_video','user']
 
 

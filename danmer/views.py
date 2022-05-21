@@ -16,6 +16,7 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
     queryset = TutorVideoPost.objects.all().order_by('-pk')
     serializer_class = TutorVideoPostSerializer
 
+    # list
     def list(self, request, *args, **kwargs):
         try:
             print("list")
@@ -34,26 +35,141 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
         except:
             return Response(status=400)
 
+    # post
     def perform_create(self, serializer):
-        print(type(self.request))
         serializer.save(user=get_object_or_404(get_user_model(), pk=1))
+
+
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            video = serializer.data
+            return Response(video, status=status.HTTP_201_CREATED, headers=headers)
+        except:
+            return Response(status = 400)
+            
+    # detail
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            video = serializer.data
+            return Response(video, status=200)
+        except:
+            return Response(status = 400)
+
+    # delete
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response(status = 400)
+
+    # update
+    def update(self, request, *args, **kwargs):
+        try:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+            video = serializer.data
+            return Response(video, status = 200)
+        except:
+            return Response(status = 400)
+
 
 
 class TuteeVideoViewSet(viewsets.ModelViewSet):
     queryset = TuteeVideoPost.objects.all().order_by('-pk')
     serializer_class = TuteeVideoPostSerializer
 
+    # post
+
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            video = serializer.data
+            return Response(video, status=status.HTTP_201_CREATED, headers=headers)
+        except:
+            return Response(status = 400)
+
     def perform_create(self, serializer):
-        # ï¿½Ó½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        # ÀÓ½Ã À¯Àú ¼³Á¤ 
         user = get_object_or_404(get_user_model(), pk=1)
         print(user)
         print("tvid:", serializer.validated_data['tutor_video_id'])
         tutor_video = get_object_or_404(
             TutorVideoPost, pk=serializer.validated_data['tutor_video_id'])
         print(tutor_video)
-        serializer.save(user=self.request.user, tutor_video=tutor_video)
+        serializer.save(user=user, tutor_video=tutor_video)
 
-        #serializer.save(user = user)
+    # list
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data, stauts = 200)
+
+            serializer = self.get_serializer(queryset, many=True)
+            video_list = serializer.data
+            return Response(video_list, status = 200)
+        except : 
+            return Response(status = 400)
+    # detail
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            video = serializer.data
+            return Response(video, status=200)
+        except:
+            return Response(status = 400)
+
+    # delete
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response(status = 400)
+
+    # update
+    def update(self, request, *args, **kwargs):
+        try:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+            video = serializer.data
+            return Response(video, status = 200)
+        except:
+            return Response(status = 400)
+
+
 
 # class TuteeVideoPostAPI(APIView):
 #     def post(self, request, *args, **kwargs):
