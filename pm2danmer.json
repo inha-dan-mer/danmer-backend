@@ -1,0 +1,9 @@
+{ "apps":
+    [
+    { "name": "danmer-backend",
+    "script": "manage.py",
+    "args": ["runserver", "0.0.0.0:8000"],
+    "exec_mode": "fork",
+    "exec_interpreter" : "python" }
+]
+}
