@@ -2,7 +2,7 @@
 
 python manage.py migrate
 
-if ["DJANGO_USERNAME"]
+if [$DJANGO_USERNAME]
 then
     python manage.py createsuperuser \
         --noinput \
