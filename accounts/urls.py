@@ -7,4 +7,5 @@ from rest_framework import routers
 
 
 urlpatterns = [
+    path('login', views.Login.as_view()),
 ]

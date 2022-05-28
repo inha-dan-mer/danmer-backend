@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +42,14 @@ INSTALLED_APPS = [
 
     # DRf
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+
+    # allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'django.contrib.sites',
 
     # CORS
     'corsheaders',
@@ -174,7 +183,21 @@ STATIC_ROOT = 'static'
 
 # DRF
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 10
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES':(
+        'rest_framework.permissions.IsAuthenticated', 
+    ),
+    # django Í∏∞Î≥∏ ?ù∏Ï¶ùÏùÑ jwtÎ°? ?Ñ§?†ï
+    'DEFAULT_AUTHENTICATION_CLASSES':(
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+
+
+
+# JWT_AUTH ?Ñ§?†ï
+
+JWT_AUTH = {
+    # access token ?ú†?ö®Í∏∞Í∞Ñ ?ó∞?û•
+    'JWT_EXPIRATION_DELTA' : datetime.timedelta(days = 7),
+}
