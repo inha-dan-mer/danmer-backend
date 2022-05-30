@@ -1,5 +1,4 @@
 asgiref==3.5.0
-#backports.zoneinfo==0.2.1
 boto3==1.22.9
 botocore==1.25.9
 certifi==2022.5.18.1
@@ -13,7 +12,7 @@ django-cors-headers==3.11.0
 django-rest-auth==0.9.5
 django-storages==1.12.3
 djangorestframework==3.13.1
-djangorestframework-jwt==1.11.0
+djangorestframework-simplejwt==5.2.0
 gunicorn==20.1.0
 idna==3.3
 jmespath==1.0.0

@@ -10,8 +10,10 @@ from django.contrib.auth import get_user_model
 from danmer import serializers
 
 from accounts.models import User
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.decorators import permission_classes, authentication_classes
 
-
+@permission_classes([AllowAny])
 class TutorVideoViewSet(viewsets.ModelViewSet):
     queryset = TutorVideoPost.objects.all().order_by('-pk')
     serializer_class = TutorVideoPostSerializer
@@ -108,7 +110,7 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
             return Response(status = 400)
 
     def perform_create(self, serializer):
-        # 임시 유저 설정 
+        # temporary user
         user = get_object_or_404(get_user_model(), pk=1)
         print(user)
         print("tvid:", serializer.validated_data['tutor_video_id'])

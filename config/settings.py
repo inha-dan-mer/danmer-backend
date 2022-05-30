@@ -39,17 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #'django.contrib.sites',
 
     # DRf
     'rest_framework',
-    'rest_framework.authtoken',
     'rest_auth',
+    'rest_auth.registration',
 
     # allauth
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'django.contrib.sites',
+    #'django.contrib.sites',
 
     # CORS
     'corsheaders',
@@ -60,6 +61,8 @@ INSTALLED_APPS = [
 
     # S3
     'storages',
+
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -187,17 +190,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES':(
         'rest_framework.permissions.IsAuthenticated', 
     ),
-    # django Í∏∞Î≥∏ ?ù∏Ï¶ùÏùÑ jwtÎ°? ?Ñ§?†ï
+
     'DEFAULT_AUTHENTICATION_CLASSES':(
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 
 
+REST_USE_JWT = True
 
-# JWT_AUTH ?Ñ§?†ï
-
-JWT_AUTH = {
-    # access token ?ú†?ö®Í∏∞Í∞Ñ ?ó∞?û•
-    'JWT_EXPIRATION_DELTA' : datetime.timedelta(days = 7),
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=8),
 }
