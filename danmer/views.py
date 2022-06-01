@@ -43,7 +43,6 @@ class FeedbackAPIView(ListCreateAPIView):
         data = serializer.validated_data['result_per_part']
         tutee_vid = serializer.validated_data['tutee_video_id']
         room_id = str(tutee_vid)
-        send_event('room-{}'.format(room_id),'message',{"test":"fuckkkk"})
         send_event('room-{}'.format(room_id),'message',data)
         data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
         print("data:",data)
