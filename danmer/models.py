@@ -20,4 +20,8 @@ class TuteeVideoPost(models.Model):
 
 class Feedback(models.Model):
     result_per_part = models.JSONField(default=dict) 
-    post = models.ForeignKey("TuteeVideoPost", on_delete=models.CASCADE)
+    # FIXME
+    #post = models.ForeignKey("TuteeVideoPost", on_delete=models.CASCADE)
+    tutee_video_id = models.IntegerField()
+
+

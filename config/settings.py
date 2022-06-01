@@ -16,7 +16,7 @@ import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -33,24 +33,26 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+    'django_eventstream',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'django.contrib.sites',
 
     # DRf
     'rest_framework',
     'rest_auth',
     'rest_auth.registration',
+    ## jwt
+    'rest_framework_simplejwt',
 
     # allauth
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    #'django.contrib.sites',
 
     # CORS
     'corsheaders',
@@ -61,11 +63,11 @@ INSTALLED_APPS = [
 
     # S3
     'storages',
-
-    'rest_framework_simplejwt',
+    
 ]
 
 MIDDLEWARE = [
+    'django_grip.GripMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -185,7 +187,6 @@ AWS_STORAGE_BUCKET_NAME = 'danmer-videos'
 STATIC_ROOT = 'static'
 
 # DRF
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES':(
         'rest_framework.permissions.IsAuthenticated', 
@@ -196,9 +197,14 @@ REST_FRAMEWORK = {
     ),
 }
 
-
+# JWT
 REST_USE_JWT = True
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=8),
 }
+
+# SSE
+ASGI_APPLICATION = 'config.asgi.application'
+EVENTSTREAM_STORAGE_CLASS = 'django_eventstream.storage.DjangoModelStorage'
+
+GRIP_URL = os.environ.get('GRIP_URL')

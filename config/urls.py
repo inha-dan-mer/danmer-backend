@@ -17,12 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-
+import django_eventstream
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('danmer.urls')),
     path('accounts/', include('accounts.urls')),
+    #path('feedback/', include(django_eventstream.urls), {'channels':['feedback']}),
 ]
-
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

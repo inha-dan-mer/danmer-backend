@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Feedback, TuteeVideoPost, TutorVideoPost
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import TutorVideoPostSerializer, TuteeVideoPostSerializer
+from .serializers import TutorVideoPostSerializer, TuteeVideoPostSerializer, FeedbackSerializer
 from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
@@ -13,6 +13,97 @@ from accounts.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import permission_classes, authentication_classes
 
+# SSE
+import json
+from django.http import HttpResponse, HttpResponseNotAllowed
+from django.db import IntegrityError, transaction
+from django.core.serializers.json import DjangoJSONEncoder
+from django_eventstream import send_event, get_current_event_id
+
+from rest_framework.generics import ListCreateAPIView
+
+@permission_classes([AllowAny])
+def home(request):
+    return render(request,'index.html')
+
+## FIXME
+@permission_classes([AllowAny])
+class FeedbackAPIView(ListCreateAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        print("tvid :",serializer.validated_data['tutee_video_id'])
+        print(type(serializer.validated_data['tutee_video_id']))
+        data = serializer.validated_data['result_per_part']
+        tutee_vid = serializer.validated_data['tutee_video_id']
+        room_id = str(tutee_vid)
+        send_event('room-{}'.format(room_id),'message',{"test":"fuckkkk"})
+        send_event('room-{}'.format(room_id),'message',data)
+        data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
+        print("data:",data)
+        return HttpResponse(data, content_type='application/json')
+        #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    # def get(self, request):
+    #     # FIXME all feedback -> feed back of request user
+    #     feedbacks = Feedback.objects.all()
+    #     serializer = FeedbackSerializer(feedbacks, many=True)
+    #     return Response(serializer.data)
+
+
+
+    # def create(self, request, *args, **kwargs):
+    #     print("create")
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     send_event('feedback-{}'.format(serializer.validated_data['tutee_video_id']),'message','helper')
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    # send feedback and push event server
+    # def post(self, request):
+    #     serializer = FeedbackSerializer(data = request.data)
+        
+    #     if serializer.is_valid():
+    #         print("data:",serializer.validated_data)
+    #         data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
+    #         send_event('feedback-{}'.format(serializer.validated_data['tutee_video_id']),'message','helper')
+    #         return HttpResponse(data, content_type='application/json')
+    #     return Response(status=400)
+
+
+
+# def send_feedback(request, tutee_vid):
+#     if request.method == 'GET':
+#         last_id = get_current_event_id(['feedback-{}'.format(tutee_vid)])
+#         try:
+#             tutee_video_post = TuteeVideoPost.objects.get(pk = tutee_vid)
+#             feedback = Feedback.objects.filter(post = tutee_video_post).order_by('-pk')[0]
+#         except Feedback.DoesNotExist:
+#             feedback =[]
+#         data = json.dumps(
+#             {
+#                 'feedback': feedback,
+#                 'last-event-id':last_id
+#             },
+#             cls = DjangoJSONEncoder
+#         )+'\n'
+#         return HttpResponse(data, content_type='application/json')
+    
+#     elif request.method == 'POST':
+#         try: 
+#             tutee_video_post = TuteeVideoPost.objects.get(pk = tutee_vid)
+#         except TuteeVideoPost.DoesNotExist:
+#             return Response(status = 400)
+
+
+## FIXME
 @permission_classes([AllowAny])
 class TutorVideoViewSet(viewsets.ModelViewSet):
     queryset = TutorVideoPost.objects.all().order_by('-pk')
@@ -39,14 +130,18 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
 
     # post
     def perform_create(self, serializer):
+        print("user:",get_object_or_404(get_user_model(), pk=1))
         serializer.save(user=get_object_or_404(get_user_model(), pk=1))
 
 
     def create(self, request, *args, **kwargs):
         try:
+            print("request data:", request.data)
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            print("before perform create")
             self.perform_create(serializer)
+            print("after perform create")
             headers = self.get_success_headers(serializer.data)
             video = serializer.data
             return Response(video, status=status.HTTP_201_CREATED, headers=headers)
@@ -90,8 +185,8 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
         except:
             return Response(status = 400)
 
-
-
+## FIXME
+@permission_classes([AllowAny])
 class TuteeVideoViewSet(viewsets.ModelViewSet):
     queryset = TuteeVideoPost.objects.all().order_by('-pk')
     serializer_class = TuteeVideoPostSerializer
@@ -205,3 +300,8 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
 #             serializer.save(user = self.request.user)
 #             return Response(serializer.data, status = status.HTTP_201_OK)
 #         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+
+
+##test
+

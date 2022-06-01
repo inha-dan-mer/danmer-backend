@@ -16,3 +16,8 @@ class TuteeVideoPostSerializer(serializers.ModelSerializer):
         read_only_fields = ['tutor_video','user']
 
 
+class FeedbackSerializer(serializers.ModelSerializer):
+    #tutee_video_id = serializers.IntegerField()
+    class Meta:
+        model = Feedback
+        fields = ['pk','result_per_part','tutee_video_id']
