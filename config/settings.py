@@ -184,6 +184,8 @@ AWS_S3_SECRET_ACCESS_KEY = os.getenv('SECRET_ACCESS_KEY')
 
 AWS_STORAGE_BUCKET_NAME = 'danmer-videos'
 
+AWS_REGION = "ap-northeast-2"
+
 STATIC_ROOT = 'static'
 
 # DRF
@@ -208,3 +210,6 @@ ASGI_APPLICATION = 'config.asgi.application'
 EVENTSTREAM_STORAGE_CLASS = 'django_eventstream.storage.DjangoModelStorage'
 
 GRIP_URL = os.environ.get('GRIP_URL')
+
+EVENTSTREAM_ALLOW_ORIGIN = 'danmer.site'
+EVENTSTREAM_ALLOW_CREDENTIALS = True

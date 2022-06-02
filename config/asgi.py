@@ -23,9 +23,9 @@ application = ProtocolTypeRouter({
     'http': URLRouter([
         ## FIXME
         # feedback/username/tuteevid
-        path('rooms/<room_id>/events/', AuthMiddlewareStack(
+        path('feedback/<tutee_vid>/sse', AuthMiddlewareStack(
             URLRouter(django_eventstream.routing.urlpatterns)
-        ), { 'format-channels': ['room-{room_id}'] }),
+        ), { 'format-channels': ['feedback-{tutee_vid}'] }),
         re_path(r'', get_asgi_application()),
     ]),
 })

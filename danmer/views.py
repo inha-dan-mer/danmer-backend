@@ -21,10 +21,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django_eventstream import send_event, get_current_event_id
 
 from rest_framework.generics import ListCreateAPIView
+import boto3
 
-@permission_classes([AllowAny])
-def home(request):
-    return render(request,'index.html')
 
 ## FIXME
 @permission_classes([AllowAny])
@@ -38,15 +36,14 @@ class FeedbackAPIView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        print("tvid :",serializer.validated_data['tutee_video_id'])
-        print(type(serializer.validated_data['tutee_video_id']))
+        # print("tvid :",serializer.validated_data['tutee_video_id'])
+        # print(type(serializer.validated_data['tutee_video_id']))
         data = serializer.validated_data['result_per_part']
         tutee_vid = serializer.validated_data['tutee_video_id']
-        room_id = str(tutee_vid)
-        send_event('room-{}'.format(room_id),'message',data)
+        send_event('feedback-{}'.format(tutee_vid),'message',{"status":"success","tutee_video_id":tutee_vid})
         data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
-        print("data:",data)
-        return HttpResponse(data, content_type='application/json')
+        # print("data:",data)
+        return Response(serializer.data, status=200)
         #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     # def get(self, request):
     #     # FIXME all feedback -> feed back of request user
@@ -123,6 +120,11 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(queryset, many=True)
 
             video_list = serializer.data
+
+            
+
+
+            print("list end")
             return Response(video_list, status=200)
         except:
             return Response(status=400)

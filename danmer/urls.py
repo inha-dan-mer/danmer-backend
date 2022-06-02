@@ -20,8 +20,7 @@ urlpatterns = [
     #path('practice/', views.TuteeVideoPostAPI.as_view(), name='tutee_video_post')
     #path("videos/", views.TutorVideoAPI.as_view(), name='TutorVideoList'),
     path('feedback/test', views.FeedbackAPIView.as_view()),
-    path('rooms/<room_id>/events/', include(django_eventstream.urls), {'format-channels':['room-{room_id}']}),
-    path('home/',views.home),
+    path('feedback/<tutee_vid>/sse', include(django_eventstream.urls), {'format-channels':['feedback-{tutee_vid}']}),
 
 
 ]
