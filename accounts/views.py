@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import permission_classes, authentication_classes
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenViewBase
+from django.contrib.auth.hashers import make_password
 #import arrow
 # Create your views here.
 
@@ -39,7 +40,35 @@ class AccessTokenObtainView(TokenViewBase):
 #             },
 #             status=200)
 
+# class UserCreateMixin(mixins.CreateModelMixin):
+#     def perform_create(self, serializer):
+#         print("pc:",serializer.data)
+#         serializer.validated_data["password"] = make_password(serializer.validated_data['password'])
+#         serializer.save()
 
+# @permission_classes([AllowAny])
+# class SignupView(mixins.CreateModelMixin, mixins.ListModelMixin, generics.GenericAPIView):
+#     queryset =User.objects.all()
+#     serializer_class = UserSerializer
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         print(serializer.validated_data["password"])
+#         print(make_password(serializer.validated_data['password']))
+#         serializer.validated_data["password"] = make_password(serializer.validated_data['password'])
+#         print(serializer.validated_data["password"])
+
+#         self.perform_create(serializer)
+#         User.objects.create(**serializer.data)
+#         headers = self.get_success_headers(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request)
+    
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request)
 
 
 @permission_classes([AllowAny])
@@ -47,8 +76,9 @@ class SignupView(APIView):
     def post(self,request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            print(serializer.data)
-            User.objects.create(**serializer.data)
+
+            User.objects.create_user(**serializer.data)
             return Response(serializer.data, status = 201)
         return Response(serializer.errors, status = 400)
+
 

@@ -100,7 +100,7 @@ class FeedbackAPIView(ListCreateAPIView):
 
 
 ## FIXME
-@permission_classes([AllowAny])
+# @permission_classes([AllowAny])
 class TutorVideoViewSet(viewsets.ModelViewSet):
     queryset = TutorVideoPost.objects.all().order_by('-pk')
     serializer_class = TutorVideoPostSerializer

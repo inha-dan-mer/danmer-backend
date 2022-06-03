@@ -2,8 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import update_last_login
 from django.contrib.auth import authenticate
-# from rest_framework_jwt.settings import api_settings
-
+from django.contrib.auth.hashers import make_password
 # only access token test
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
@@ -11,13 +10,30 @@ from rest_framework_simplejwt.serializers import TokenObtainSerializer
 class AccessTokenObtainSerializer(TokenObtainSerializer):
     token_class = AccessToken
 
-    def validate(self, attrs):
-        data = super().validate(attrs)
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password"] = serializers.CharField()
 
-        # add token and username to response data
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        # ...
+
+        return token
+
+    def validate(self, attrs):
+        print(attrs)
+        data = super().validate(attrs)
+        
+        # add token and username, userid to response data
         token = self.get_token(self.user)
         data["token"] = str(token)
         data["username"] = self.user.username
+        data["user_id"] = self.user.pk
+        print(data)
         return data
 
 
@@ -26,6 +42,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields =['username','email','password']
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data.get('password'))
+        #return super(UserSerializer, self).create(validated_data)
+        print("vd:",validated_data)
+        return User(**validated_data)
+
 
 # JWT_PAYLOAD_HANDLER = api_settings.JWT_PAYLOAD_HANDLER
 # JWT_ENCODE_HANDLER = api_settings.JWT_ENCODE_HANDLER
