@@ -1,12 +1,17 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Feedback, TuteeVideoPost, TutorVideoPost
+from .models import TuteeVideoPost, TutorVideoPost
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import TutorVideoPostSerializer, TuteeVideoPostSerializer, FeedbackSerializer
+from .serializers import (
+    TutorVideoPostSerializer,
+    TuteeVideoPostSerializer,
+    TutorCoordinateSerializer,
+    TuteeFeedbackSerializer,
+)
 from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
-
+from django.conf import settings
 from danmer import serializers
 
 from accounts.models import User
@@ -22,57 +27,55 @@ from django_eventstream import send_event, get_current_event_id
 
 from rest_framework.generics import ListCreateAPIView
 import boto3
-
+import jwt
 
 ## FIXME
-@permission_classes([AllowAny])
-class FeedbackAPIView(ListCreateAPIView):
-    queryset = Feedback.objects.all()
-    serializer_class = FeedbackSerializer
+# @permission_classes([AllowAny])
+# class FeedbackAPIView(ListCreateAPIView):
+#     queryset = Feedback.objects.all()
+#     serializer_class = FeedbackSerializer
 
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        # print("tvid :",serializer.validated_data['tutee_video_id'])
-        # print(type(serializer.validated_data['tutee_video_id']))
-        data = serializer.validated_data['result_per_part']
-        tutee_vid = serializer.validated_data['tutee_video_id']
-        send_event('feedback-{}'.format(tutee_vid),'message',{"status":"success","tutee_video_id":tutee_vid})
-        data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
-        # print("data:",data)
-        return Response(serializer.data, status=200)
-        #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    # def get(self, request):
-    #     # FIXME all feedback -> feed back of request user
-    #     feedbacks = Feedback.objects.all()
-    #     serializer = FeedbackSerializer(feedbacks, many=True)
-    #     return Response(serializer.data)
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create(serializer)
+#         headers = self.get_success_headers(serializer.data)
+#         # print("tvid :",serializer.validated_data['tutee_video_id'])
+#         # print(type(serializer.validated_data['tutee_video_id']))
+#         data = serializer.validated_data['result_per_part']
+#         tutee_vid = serializer.validated_data['tutee_video_id']
+#         send_event('feedback-{}'.format(tutee_vid),'message',{"status":"success","tutee_video_id":tutee_vid})
+#         data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
+#         # print("data:",data)
+#         return Response(serializer.data, status=200)
+#         #return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+#     # def get(self, request):
+#     #     # FIXME all feedback -> feed back of request user
+#     #     feedbacks = Feedback.objects.all()
+#     #     serializer = FeedbackSerializer(feedbacks, many=True)
+#     #     return Response(serializer.data)
 
 
+# def create(self, request, *args, **kwargs):
+#     print("create")
+#     serializer = self.get_serializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+#     self.perform_create(serializer)
+#     headers = self.get_success_headers(serializer.data)
+#     send_event('feedback-{}'.format(serializer.validated_data['tutee_video_id']),'message','helper')
+#     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    # def create(self, request, *args, **kwargs):
-    #     print("create")
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     send_event('feedback-{}'.format(serializer.validated_data['tutee_video_id']),'message','helper')
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+# send feedback and push event server
+# def post(self, request):
+#     serializer = FeedbackSerializer(data = request.data)
 
-    # send feedback and push event server
-    # def post(self, request):
-    #     serializer = FeedbackSerializer(data = request.data)
-        
-    #     if serializer.is_valid():
-    #         print("data:",serializer.validated_data)
-    #         data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
-    #         send_event('feedback-{}'.format(serializer.validated_data['tutee_video_id']),'message','helper')
-    #         return HttpResponse(data, content_type='application/json')
-    #     return Response(status=400)
-
+#     if serializer.is_valid():
+#         print("data:",serializer.validated_data)
+#         data = json.dumps(serializer.validated_data['result_per_part'], cls=DjangoJSONEncoder)+'\n'
+#         send_event('feedback-{}'.format(serializer.validated_data['tutee_video_id']),'message','helper')
+#         return HttpResponse(data, content_type='application/json')
+#     return Response(status=400)
 
 
 # def send_feedback(request, tutee_vid):
@@ -91,24 +94,22 @@ class FeedbackAPIView(ListCreateAPIView):
 #             cls = DjangoJSONEncoder
 #         )+'\n'
 #         return HttpResponse(data, content_type='application/json')
-    
+
 #     elif request.method == 'POST':
-#         try: 
+#         try:
 #             tutee_video_post = TuteeVideoPost.objects.get(pk = tutee_vid)
 #         except TuteeVideoPost.DoesNotExist:
 #             return Response(status = 400)
 
 
-## FIXME
-# @permission_classes([AllowAny])
+@permission_classes([AllowAny])
 class TutorVideoViewSet(viewsets.ModelViewSet):
-    queryset = TutorVideoPost.objects.all().order_by('-pk')
+    queryset = TutorVideoPost.objects.all().order_by("-pk")
     serializer_class = TutorVideoPostSerializer
 
     # list
     def list(self, request, *args, **kwargs):
         try:
-            print("list")
             queryset = self.filter_queryset(self.get_queryset())
             page = self.paginate_queryset(queryset)
             if page is not None:
@@ -116,39 +117,27 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
                 print("serailizer.data:", serializer.data)
                 print(type(serializer.data))
                 return self.get_paginated_response(serializer.data)
-
             serializer = self.get_serializer(queryset, many=True)
-
             video_list = serializer.data
-
-            
-
-
-            print("list end")
             return Response(video_list, status=200)
         except:
             return Response(status=400)
 
     # post
-    def perform_create(self, serializer):
-        print("user:",get_object_or_404(get_user_model(), pk=1))
-        serializer.save(user=get_object_or_404(get_user_model(), pk=1))
-
+    def perform_create(self, serializer, payload):
+        serializer.save(user=get_object_or_404(get_user_model(), pk=payload["user_id"]))
 
     def create(self, request, *args, **kwargs):
-        try:
-            print("request data:", request.data)
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            print("before perform create")
-            self.perform_create(serializer)
-            print("after perform create")
-            headers = self.get_success_headers(serializer.data)
-            video = serializer.data
-            return Response(video, status=status.HTTP_201_CREATED, headers=headers)
-        except:
-            return Response(status = 400)
-            
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        payload = jwt.decode(
+            request.META["HTTP_X_AUTH_TOKEN"], settings.SECRET_KEY, algorithms="HS256"
+        )
+        self.perform_create(serializer, payload)
+        headers = self.get_success_headers(serializer.data)
+        video = serializer.data
+        return Response(video, status=status.HTTP_201_CREATED, headers=headers)
+
     # detail
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -157,7 +146,7 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
             video = serializer.data
             return Response(video, status=200)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
     # delete
     def destroy(self, request, *args, **kwargs):
@@ -166,53 +155,59 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
     # update
     def update(self, request, *args, **kwargs):
         try:
-            partial = kwargs.pop('partial', False)
+            partial = kwargs.pop("partial", False)
             instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer = self.get_serializer(
+                instance, data=request.data, partial=partial
+            )
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
 
-            if getattr(instance, '_prefetched_objects_cache', None):
+            if getattr(instance, "_prefetched_objects_cache", None):
                 # If 'prefetch_related' has been applied to a queryset, we need to
                 # forcibly invalidate the prefetch cache on the instance.
                 instance._prefetched_objects_cache = {}
             video = serializer.data
-            return Response(video, status = 200)
+            return Response(video, status=200)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
-## FIXME
+
 @permission_classes([AllowAny])
 class TuteeVideoViewSet(viewsets.ModelViewSet):
-    queryset = TuteeVideoPost.objects.all().order_by('-pk')
+    queryset = TuteeVideoPost.objects.all().order_by("-pk")
     serializer_class = TuteeVideoPostSerializer
 
     # post
-
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
+            payload = jwt.decode(
+                request.META["HTTP_X_AUTH_TOKEN"],
+                settings.SECRET_KEY,
+                algorithms="HS256",
+            )
+            self.perform_create(serializer, payload)
             headers = self.get_success_headers(serializer.data)
+            print("headers", headers)
             video = serializer.data
             return Response(video, status=status.HTTP_201_CREATED, headers=headers)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer, payload):
         # temporary user
-        user = get_object_or_404(get_user_model(), pk=1)
-        print(user)
-        print("tvid:", serializer.validated_data['tutor_video_id'])
+        user = get_object_or_404(get_user_model(), pk=payload["user_id"])
+        # print("tvid:", serializer.validated_data['tutor_video_id'])
         tutor_video = get_object_or_404(
-            TutorVideoPost, pk=serializer.validated_data['tutor_video_id'])
-        print(tutor_video)
+            TutorVideoPost, pk=serializer.validated_data["tutor_video_id"]
+        )
         serializer.save(user=user, tutor_video=tutor_video)
 
     # list
@@ -223,13 +218,14 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data, stauts = 200)
+                return self.get_paginated_response(serializer.data, stauts=200)
 
             serializer = self.get_serializer(queryset, many=True)
             video_list = serializer.data
-            return Response(video_list, status = 200)
-        except : 
-            return Response(status = 400)
+            return Response(video_list, status=200)
+        except:
+            return Response(status=400)
+
     # detail
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -238,7 +234,7 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
             video = serializer.data
             return Response(video, status=200)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
     # delete
     def destroy(self, request, *args, **kwargs):
@@ -247,26 +243,61 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
     # update
     def update(self, request, *args, **kwargs):
         try:
-            partial = kwargs.pop('partial', False)
+            partial = kwargs.pop("partial", False)
             instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer = self.get_serializer(
+                instance, data=request.data, partial=partial
+            )
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
 
-            if getattr(instance, '_prefetched_objects_cache', None):
+            if getattr(instance, "_prefetched_objects_cache", None):
                 # If 'prefetch_related' has been applied to a queryset, we need to
                 # forcibly invalidate the prefetch cache on the instance.
                 instance._prefetched_objects_cache = {}
             video = serializer.data
-            return Response(video, status = 200)
+            return Response(video, status=200)
         except:
-            return Response(status = 400)
+            return Response(status=400)
 
+
+# def update(self, request, *args, **kwargs):
+tutor_update = TutorVideoViewSet.as_view({"post": "update"})
+
+
+@permission_classes([AllowAny])
+class TutorCoordinatePostAPI(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = TutorCoordinateSerializer(data=request.data)
+        if serializer.is_valid():
+            tutor_id = serializer.validated_data["tutor_id"]
+            tutor_video = get_object_or_404(TutorVideoPost, pk=tutor_id)
+            # tutor_serializer = TutorVideoPostSerializer(tutor_video, )
+            tutor_video.coordinate_url = serializer.validated_data["coordinate_url"]
+            tutor_video.save()
+            # serializer.save()
+            return Response(status=200)
+        return Response(serializer.errors, status=400)
+
+
+@permission_classes([AllowAny])
+class TuteeFeedbackPostAPI(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = TuteeFeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            tutee_id = serializer.validated_data["tutee_id"]
+            tutee_video = get_object_or_404(TuteeVideoPost, pk=tutee_id)
+            tutee_video.feedback_result = serializer.validated_data["feedback_result"]
+            print(tutee_id, tutee_video)
+            print(tutee_video.feedback_result)
+            tutee_video.save()
+            return Response(status=200)
+        return Response(serializer.errors, status=400)
 
 
 # class TuteeVideoPostAPI(APIView):
@@ -301,8 +332,3 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
 #             serializer.save(user = self.request.user)
 #             return Response(serializer.data, status = status.HTTP_201_OK)
 #         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
-
-
-
-##test
-

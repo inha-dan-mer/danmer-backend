@@ -28,21 +28,6 @@ s3.upload_file(file_name, bucket_name, s3_file_name)
 # s3.download_file(bucket_name, 'images/phread.png', local_name)
 
 
-# export ACCESS_KEY = "AKIARDHOONSUZTPRE54F"
-# export SECRET_ACCESS_KEY = "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"
-
-def s3_connection():
-    try:
-        s3 = boto3.client(
-            service_name="s3",# 자신이 설정한 bucket region
-            aws_access_key_id="AKIARDHOONSUZTPRE54F",
-            aws_secret_access_key= "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"
-        )
-    except Exception as e:
-        print(e)
-    else:
-        print("s3 bucket connected!")
-        return s3
 
 
 def s3_put_object(s3, bucket, filepath, access_key):
@@ -62,7 +47,7 @@ def s3_put_object(s3, bucket, filepath, access_key):
     )
 
 
-s3 = s3_connection()
+
 s3_put_object(s3, "danmer-videos", "C:\Dev\danmer\danmer-backend\danmer\pthread.png", "images/test2.png")
 
 
