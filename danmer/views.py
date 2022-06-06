@@ -28,6 +28,7 @@ from django_eventstream import send_event, get_current_event_id
 from rest_framework.generics import ListCreateAPIView
 import boto3
 import jwt
+import requests
 
 ## FIXME
 # @permission_classes([AllowAny])
@@ -101,6 +102,26 @@ import jwt
 #         except TuteeVideoPost.DoesNotExist:
 #             return Response(status = 400)
 
+# send tutor_video to deep server for coordinate file
+def send_tutor_video(tutor_id, video_url):
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    data = {"video_url": video_url, "tutor_id": tutor_id}
+    deep_server_url = "http://43.200.57.139:3000/api/process/tutor"
+    response = requests.post(deep_server_url, data=json.dumps(data), headers=headers)
+    return response.status_code
+
+
+def send_tutee_video(coordinate_url, tutee_id, video_url):
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    data = {
+        "video_url": video_url,
+        "tutee_id": tutee_id,
+        "coordinate_url": coordinate_url,
+    }
+    deep_server_url = "http://43.200.57.139:3000/api/process/tutee"
+    response = requests.post(deep_server_url, data=json.dumps(data), headers=headers)
+    return response.status_code
+
 
 @permission_classes([AllowAny])
 class TutorVideoViewSet(viewsets.ModelViewSet):
@@ -135,8 +156,10 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
         )
         self.perform_create(serializer, payload)
         headers = self.get_success_headers(serializer.data)
-        video = serializer.data
-        return Response(video, status=status.HTTP_201_CREATED, headers=headers)
+        video_data = serializer.data
+        video = get_object_or_404(TutorVideoPost, pk=video_data["tutor_id"])
+        send_tutor_video(video.pk, video.video_url.url)
+        return Response(video_data, status=status.HTTP_201_CREATED, headers=headers)
 
     # detail
     def retrieve(self, request, *args, **kwargs):
@@ -196,8 +219,15 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer, payload)
             headers = self.get_success_headers(serializer.data)
             print("headers", headers)
-            video = serializer.data
-            return Response(video, status=status.HTTP_201_CREATED, headers=headers)
+            video_data = serializer.data
+            # send tuteevideo to deep_server
+            video = get_object_or_404(TuteeVideoPost, pk=video_data["tutee_id"])
+            send_tutee_video(
+                video.tutor_video.coordinate_url,
+                video.pk,
+                video.tutor_video.video_url.url,
+            )
+            return Response(video_data, status=status.HTTP_201_CREATED, headers=headers)
         except:
             return Response(status=400)
 
