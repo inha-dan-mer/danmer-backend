@@ -28,4 +28,5 @@ urlpatterns = [
         {"format-channels": ["feedback-{user_id}"]},
     ),
     path("none/feedback", views.NoneFeedbackVideoList.as_view()),
+    path("feedback/<tutee_id>", views.FeedbackList.as_view()),
 ]

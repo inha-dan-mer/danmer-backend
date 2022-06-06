@@ -32,6 +32,22 @@ import requests
 
 
 @permission_classes([AllowAny])
+class FeedbackList(APIView):
+    def get(self, request, tutee_id=None):
+        tutee_video = get_object_or_404(TuteeVideoPost, pk=tutee_id)
+        tutor_video = tutee_video.tutor_video
+        data = {
+            "video_title": tutor_video.video_title,
+            "tutee_id": tutee_id,
+            "tutor_id": tutor_video.pk,
+            "tutee_video_url": tutee_video.tutee_video.url,
+            "tutor_video_url": tutor_video.video_url.url,
+            "feedback_result": tutee_video.feedback_result,
+        }
+        return Response(data, status=200)
+
+
+@permission_classes([AllowAny])
 class NoneFeedbackVideoList(generics.ListAPIView):
     queryset = TuteeVideoPost.objects.filter(feedback_result={})
     serializer_class = NoneFeedbackVideoSerializer
