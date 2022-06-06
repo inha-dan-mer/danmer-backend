@@ -7,8 +7,9 @@ from .serializers import (
     TuteeVideoPostSerializer,
     TutorCoordinateSerializer,
     TuteeFeedbackSerializer,
+    NoneFeedbackVideoSerializer,
 )
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
 from django.conf import settings
@@ -25,10 +26,16 @@ from django.db import IntegrityError, transaction
 from django.core.serializers.json import DjangoJSONEncoder
 from django_eventstream import send_event, get_current_event_id
 
-from rest_framework.generics import ListCreateAPIView
 import boto3
 import jwt
 import requests
+
+
+@permission_classes([AllowAny])
+class NoneFeedbackVideoList(generics.ListAPIView):
+    queryset = TuteeVideoPost.objects.filter(feedback_result={})
+    serializer_class = NoneFeedbackVideoSerializer
+
 
 ## FIXME
 # @permission_classes([AllowAny])

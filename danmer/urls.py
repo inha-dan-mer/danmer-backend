@@ -27,4 +27,5 @@ urlpatterns = [
         include(django_eventstream.urls),
         {"format-channels": ["feedback-{user_id}"]},
     ),
+    path("none/feedback", views.NoneFeedbackVideoList.as_view()),
 ]

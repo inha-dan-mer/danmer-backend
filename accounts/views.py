@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model
-from django.core import cache 
+from django.core import cache
+from danmer.models import TutorVideoPost, TuteeVideoPost
+from danmer.serializers import TutorVideoPostSerializer, TuteeVideoPostSerializer
 from .serializers import UserSerializer, AccessTokenObtainSerializer
 from rest_framework import status, mixins, generics
 from rest_framework.views import APIView
@@ -9,10 +11,34 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import permission_classes, authentication_classes
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenViewBase
 from django.contrib.auth.hashers import make_password
-#import arrow
+from django.conf import settings
+import jwt
+
 # Create your views here.
 
 User = get_user_model()
+
+
+@permission_classes([AllowAny])
+class ProfileListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        payload = jwt.decode(
+            request.META["HTTP_X_AUTH_TOKEN"], settings.SECRET_KEY, algorithms="HS256"
+        )
+        uid = payload.get("user_id")
+        user = get_object_or_404(User, pk=uid)
+        tutor_video_list = TutorVideoPost.objects.filter(user=user)
+        tutee_video_list = TuteeVideoPost.objects.filter(user=user)
+        tutor_video_serializer = TutorVideoPostSerializer(tutor_video_list, many=True)
+        tutee_vide_serializer = TuteeVideoPostSerializer(tutee_video_list, many=True)
+        data = {
+            "tutee_video_list": tutee_vide_serializer.data,
+            "tutor_video_list": tutor_video_serializer.data,
+        }
+        return Response(data, status=200)
+
 
 @permission_classes([AllowAny])
 class AccessTokenObtainView(TokenViewBase):
@@ -25,8 +51,8 @@ class AccessTokenObtainView(TokenViewBase):
 #     def post(self, request, *args, **kwargs):
 #         # username, password
 #         serializer = self.get_serializer(data = request.data)
-        
-    
+
+
 #         if not serializer.is_valid(raise_exceptions=True):
 #             return Response(status=409)
 #         serializer.is_valid(raise_exceptions=True)
@@ -66,19 +92,17 @@ class AccessTokenObtainView(TokenViewBase):
 
 #     def get(self, request, *args, **kwargs):
 #         return self.list(request)
-    
+
 #     def post(self, request, *args, **kwargs):
 #         return self.create(request)
 
 
 @permission_classes([AllowAny])
 class SignupView(APIView):
-    def post(self,request):
+    def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
 
             User.objects.create_user(**serializer.data)
-            return Response(serializer.data, status = 201)
-        return Response(serializer.errors, status = 400)
-
-
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)

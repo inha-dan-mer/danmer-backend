@@ -31,6 +31,17 @@ class TutorVideoPostSerializer(serializers.ModelSerializer):
         return obj.id
 
 
+class NoneFeedbackVideoSerializer(serializers.ModelSerializer):
+    tutee_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TuteeVideoPost
+        fields = ["tutee_id"]
+
+    def get_tutee_id(self, obj):
+        return obj.id
+
+
 class TuteeVideoPostSerializer(serializers.ModelSerializer):
     tutor_video_id = serializers.IntegerField()
     uid = serializers.SerializerMethodField()
@@ -52,6 +63,9 @@ class TuteeVideoPostSerializer(serializers.ModelSerializer):
 
     def get_uid(self, obj):
         return obj.user.id
+
+    # def get_tutor_video_id(self, obj):
+    #     return obj.tutor_video.id
 
 
 class TutorCoordinateSerializer(serializers.Serializer):

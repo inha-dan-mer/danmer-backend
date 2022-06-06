@@ -8,8 +8,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 urlpatterns = [
-    #path('login', views.Login.as_view()),
-    path('signup', views.SignupView.as_view(), name='signup'),
-    path('login', views.AccessTokenObtainView.as_view(), name='token_obtain'),
-    #path('api/token/', views.MyTokenView.as_view(), name='token_obtain_pair'),
+    # path('login', views.Login.as_view()),
+    path("signup", views.SignupView.as_view(), name="signup"),
+    path("login", views.AccessTokenObtainView.as_view(), name="token_obtain"),
+    path("profile", views.ProfileListView.as_view(), name="profile"),
+    # path('api/token/', views.MyTokenView.as_view(), name='token_obtain_pair'),
 ]
