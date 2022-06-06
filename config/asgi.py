@@ -14,18 +14,26 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 import django_eventstream
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
-#application = get_asgi_application()
+# application = get_asgi_application()
 
 
-application = ProtocolTypeRouter({
-    'http': URLRouter([
-        ## FIXME
-        # feedback/username/tuteevid
-        path('feedback/<tutee_vid>/sse', AuthMiddlewareStack(
-            URLRouter(django_eventstream.routing.urlpatterns)
-        ), { 'format-channels': ['feedback-{tutee_vid}'] }),
-        re_path(r'', get_asgi_application()),
-    ]),
-})
+application = ProtocolTypeRouter(
+    {
+        "http": URLRouter(
+            [
+                ## FIXME
+                # feedback/username/tuteevid
+                path(
+                    "feedback/<user_id>/sse",
+                    AuthMiddlewareStack(
+                        URLRouter(django_eventstream.routing.urlpatterns)
+                    ),
+                    {"format-channels": ["feedback-{user_id}"]},
+                ),
+                re_path(r"", get_asgi_application()),
+            ]
+        ),
+    }
+)

@@ -159,7 +159,7 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
         video_data = serializer.data
         video = get_object_or_404(TutorVideoPost, pk=video_data["tutor_id"])
         send_tutor_video(video.pk, video.video_url.url)
-        return Response(video_data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(video_data, status=200, headers=headers)
 
     # detail
     def retrieve(self, request, *args, **kwargs):
@@ -227,7 +227,9 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
                 video.pk,
                 video.tutor_video.video_url.url,
             )
-            return Response(video_data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(video_data, status=200, headers=headers)
+        except KeyError:
+            return Response(status=401)
         except:
             return Response(status=400)
 
@@ -326,6 +328,12 @@ class TuteeFeedbackPostAPI(APIView):
             print(tutee_id, tutee_video)
             print(tutee_video.feedback_result)
             tutee_video.save()
+            user_id = tutee_video.user.pk
+            send_event(
+                "feedback-{}".format(user_id),
+                "message",
+                {"status": "success", "user_id": user_id, "tutee_id": tutee_id},
+            )
             return Response(status=200)
         return Response(serializer.errors, status=400)
 
