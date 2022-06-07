@@ -32,9 +32,21 @@ class ProfileListView(APIView):
         tutor_video_list = TutorVideoPost.objects.filter(user=user)
         tutee_video_list = TuteeVideoPost.objects.filter(user=user)
         tutor_video_serializer = TutorVideoPostSerializer(tutor_video_list, many=True)
-        tutee_vide_serializer = TuteeVideoPostSerializer(tutee_video_list, many=True)
+        tutee_video_serializer = TuteeVideoPostSerializer(tutee_video_list, many=True)
+        tutor_id_list = [
+            tutee_video["tutor_video_id"] for tutee_video in tutee_video_serializer.data
+        ]
+        for idx in range(len(tutor_id_list)):
+            tutor_id = tutor_id_list[idx]
+            tutor = get_object_or_404(TutorVideoPost, pk=tutor_id)
+            tutee_video_serializer.data[idx]["video_title"] = tutor.video_title
+            tutee_video_serializer.data[idx]["thumbnail_url"] = tutor.thumbnail_url.url
+            tutee_video_serializer.data[idx]["song_artist"] = tutor.song_artist
+            tutee_video_serializer.data[idx]["tutor_username"] = tutor.user.username
+            tutee_video_serializer.data[idx]["tutor_uid"] = tutor.user.pk
+
         data = {
-            "tutee_video_list": tutee_vide_serializer.data,
+            "tutee_video_list": tutee_video_serializer.data,
             "tutor_video_list": tutor_video_serializer.data,
         }
         return Response(data, status=200)

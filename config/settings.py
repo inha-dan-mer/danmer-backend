@@ -226,5 +226,6 @@ EVENTSTREAM_STORAGE_CLASS = "django_eventstream.storage.DjangoModelStorage"
 
 GRIP_URL = os.environ.get("GRIP_URL")
 
-EVENTSTREAM_ALLOW_ORIGIN = "danmer.site"
+EVENTSTREAM_ALLOW_ORIGIN = "http://danmer.site"
 EVENTSTREAM_ALLOW_CREDENTIALS = True
+EVENTSTREAM_ALLOW_HEADERS = "x-auth-token"

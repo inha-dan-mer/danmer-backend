@@ -342,6 +342,12 @@ class TutorCoordinatePostAPI(APIView):
 
 @permission_classes([AllowAny])
 class TuteeFeedbackPostAPI(APIView):
+    def dispatch(self, *args, **kwargs):
+        response = super(TuteeFeedbackPostAPI, self).dispatch(*args, **kwargs)
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Credentials"] = "true"
+        return response
+
     def post(self, request, *args, **kwargs):
         serializer = TuteeFeedbackSerializer(data=request.data)
         if serializer.is_valid():
