@@ -13,7 +13,7 @@ class TutorVideoPost(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.video_title
+        return "id:" + str(self.pk) + " " + self.video_title
 
 
 class TuteeVideoPost(models.Model):
@@ -21,3 +21,13 @@ class TuteeVideoPost(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tutor_video = models.ForeignKey("TutorVideoPost", on_delete=models.CASCADE)
     feedback_result = models.JSONField(default=dict, null=True)  # distance result
+
+    def __str__(self):
+        return (
+            "tutee_id:"
+            + str(self.pk)
+            + ", tutor_id:"
+            + str(self.tutor_video.pk)
+            + ", title:"
+            + self.tutor_video.video_title
+        )

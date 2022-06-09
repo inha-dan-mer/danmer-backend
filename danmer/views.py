@@ -30,6 +30,8 @@ import boto3
 import jwt
 import requests
 
+User = get_user_model()
+
 
 @permission_classes([AllowAny])
 class FeedbackList(APIView):
@@ -154,7 +156,14 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
     # list
     def list(self, request, *args, **kwargs):
         try:
+            payload = jwt.decode(
+                request.META["HTTP_X_AUTH_TOKEN"],
+                settings.SECRET_KEY,
+                algorithms="HS256",
+            )
             queryset = self.filter_queryset(self.get_queryset())
+            queryset = queryset.filter(user=payload["user_id"])
+
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
@@ -248,7 +257,7 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
             send_tutee_video(
                 video.tutor_video.coordinate_url,
                 video.pk,
-                video.tutor_video.video_url.url,
+                video.tutee_video.url,
             )
             return Response(video_data, status=200, headers=headers)
         except KeyError:
@@ -268,8 +277,13 @@ class TuteeVideoViewSet(viewsets.ModelViewSet):
     # list
     def list(self, request, *args, **kwargs):
         try:
+            payload = jwt.decode(
+                request.META["HTTP_X_AUTH_TOKEN"],
+                settings.SECRET_KEY,
+                algorithms="HS256",
+            )
             queryset = self.filter_queryset(self.get_queryset())
-
+            queryset = queryset.filter(user=payload["user_id"])
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
