@@ -156,13 +156,7 @@ class TutorVideoViewSet(viewsets.ModelViewSet):
     # list
     def list(self, request, *args, **kwargs):
         try:
-            payload = jwt.decode(
-                request.META["HTTP_X_AUTH_TOKEN"],
-                settings.SECRET_KEY,
-                algorithms="HS256",
-            )
             queryset = self.filter_queryset(self.get_queryset())
-            queryset = queryset.filter(user=payload["user_id"])
 
             page = self.paginate_queryset(queryset)
             if page is not None:
