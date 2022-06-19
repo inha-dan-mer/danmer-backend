@@ -224,8 +224,6 @@ SIMPLE_JWT = {
 ASGI_APPLICATION = "config.asgi.application"
 EVENTSTREAM_STORAGE_CLASS = "django_eventstream.storage.DjangoModelStorage"
 
-GRIP_URL = os.environ.get("GRIP_URL")
-
 EVENTSTREAM_ALLOW_ORIGIN = "https://danmer.site"
 EVENTSTREAM_ALLOW_CREDENTIALS = True
 EVENTSTREAM_ALLOW_HEADERS = "x-auth-token"
