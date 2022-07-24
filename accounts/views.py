@@ -26,8 +26,8 @@ class ProfileListView(APIView):
     def get(self, request):
         payload = jwt.decode(
             request.META["HTTP_X_AUTH_TOKEN"], settings.SECRET_KEY, algorithms="HS256"
-        )
-        uid = payload.get("user_id")
+        )  # payload is dictionary of token's data
+        uid = payload.get("user_id")  # user_id is a custom field. (serializers)
         user = get_object_or_404(User, pk=uid)
         tutor_video_list = TutorVideoPost.objects.filter(user=user)
         tutee_video_list = TuteeVideoPost.objects.filter(user=user)
@@ -114,7 +114,6 @@ class SignupView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-
             User.objects.create_user(**serializer.data)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)

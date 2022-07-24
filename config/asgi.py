@@ -30,7 +30,9 @@ application = ProtocolTypeRouter(
                     AuthMiddlewareStack(
                         URLRouter(django_eventstream.routing.urlpatterns)
                     ),
-                    {"format-channels": ["feedback-{user_id}"]},
+                    {
+                        "format-channels": ["feedback-{user_id}"]
+                    },  # must use format-channels for custom
                 ),
                 re_path(r"", get_asgi_application()),
             ]

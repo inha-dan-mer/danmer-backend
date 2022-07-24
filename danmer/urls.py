@@ -6,6 +6,7 @@ from . import views
 from rest_framework import routers
 import django_eventstream
 
+# the way register viewset's api not using router
 # tutor_list = views.TutorVideoViewSet.as_view({"get": "list"})
 # tutor_datail = views.TutorVideoViewSet.as_view({"get": "retrieve"})
 

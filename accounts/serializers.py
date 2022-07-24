@@ -16,10 +16,12 @@ class AccessTokenObtainSerializer(TokenObtainSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["password"] = serializers.CharField()
+        self.fields[
+            "password"
+        ] = serializers.CharField()  # add fields "password" to token
 
     @classmethod
-    def get_token(cls, user):
+    def get_token(cls, user):  # create token
         token = super().get_token(user)
 
         # Add custom claims
@@ -41,17 +43,15 @@ class AccessTokenObtainSerializer(TokenObtainSerializer):
         return data
 
 
-User = get_user_model()
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "email", "password"]
 
     def create(self, validated_data):
-        validated_data["password"] = make_password(validated_data.get("password"))
-        # return super(UserSerializer, self).create(validated_data)
+        validated_data["password"] = make_password(
+            validated_data.get("password")
+        )  # for pw encryption
         print("vd:", validated_data)
         return User(**validated_data)
 

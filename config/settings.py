@@ -152,7 +152,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #     'https://127.0.0.1:3000',
 #     'https://localhost:8000',
 #     'http://52.79.67.201:8000'
-#     'http://danmer.site'
+#     'https://danmer.site'
 
 # ]
 
@@ -181,12 +181,14 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # for AWS S3
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+DEFAULT_FILE_STORAGE = (
+    "storages.backends.s3boto3.S3Boto3Storage"  # save in s3 not django project
+)
 AWS_S3_SECURE_URLS = False  # use http instead of https
 # don't add complex authentication-related query parameters for requests
 AWS_QUERYSTRING_AUTH = False
 
-load_dotenv()
+load_dotenv()  # for os.getenv()
 
 AWS_S3_ACCESS_KEY_ID = os.getenv("ACCESS_KEY")
 AWS_S3_SECRET_ACCESS_KEY = os.getenv("SECRET_ACCESS_KEY")
@@ -224,6 +226,7 @@ SIMPLE_JWT = {
 ASGI_APPLICATION = "config.asgi.application"
 EVENTSTREAM_STORAGE_CLASS = "django_eventstream.storage.DjangoModelStorage"
 
+# CORS for SSE
 EVENTSTREAM_ALLOW_ORIGIN = "https://danmer.site"
 EVENTSTREAM_ALLOW_CREDENTIALS = True
 EVENTSTREAM_ALLOW_HEADERS = "x-auth-token"

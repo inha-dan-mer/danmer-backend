@@ -3,6 +3,7 @@ from .models import TutorVideoPost, TuteeVideoPost
 
 
 class TutorVideoPostSerializer(serializers.ModelSerializer):
+    # custom field : must define function (get_name)
     uid = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
     tutor_id = serializers.SerializerMethodField()
